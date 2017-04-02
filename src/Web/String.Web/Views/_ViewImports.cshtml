@@ -1,6 +1,9 @@
-﻿@using String.Web
+﻿@using String.Web.Resources.Data
+@using String.Web
 @using String.Web.Models
 @using String.Web.Models.AccountViewModels
 @using String.Web.Models.ManageViewModels
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Localization
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject IStringLocalizer<Labels> SharedLocalizer

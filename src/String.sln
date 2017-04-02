@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+VisualStudioVersion = 15.0.26228.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{E1849897-9727-4C90-B115-0547EF8501D9}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "String.Data", "Data\String.Data\String.Data.csproj", "{FCE7D534-D0F9-498E-A22F-8D5594356DCA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "String.Data.Models", "Data\String.Data.Models\String.Data.Models.csproj", "{C3E69768-5585-4DD3-BF24-09376894098C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{C3AAC655-E325-4DF7-80AA-E132934C3767}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
