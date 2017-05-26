@@ -15,6 +15,8 @@ using String.Web;
 
 namespace String_Web
 {
+    using Microsoft.EntityFrameworkCore;
+
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -34,6 +36,31 @@ namespace String_Web
         {
             // Add framework services.
             services.AddMvc();
+
+            services.AddDbContext<DbContext>(options =>
+                {
+                    // Configure the context to use an in-memory store.
+                    options.UseInMemoryDatabase();
+                    // Register the entity sets needed by OpenIddict.
+                    // Note: use the generic overload if you need
+                    // to replace the default OpenIddict entities.
+                    options.UseOpenIddict();
+                });
+            services.AddOpenIddict(options =>
+                {
+                    // Register the Entity Framework stores.
+                    options.AddEntityFrameworkCoreStores<DbContext>();
+                    // Register the ASP.NET Core MVC binder used by OpenIddict.
+                    // Note: if you don't call this method, you won't be able to
+                    // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
+                    options.AddMvcBinders();
+                    // Enable the token endpoint.
+                    options.EnableTokenEndpoint("/connect/token");
+                    // Enable the password flow.
+                    options.AllowPasswordFlow();
+                    // During development, you can disable the HTTPS requirement.
+                    options.DisableHttpsRequirement();
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,49 +81,13 @@ namespace String_Web
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            // secretKey contains a secret passphrase only your server knows
-            var secretKey = "mysupersecret_secretkey!123";
-            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey));
-
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                // The signing key must match!
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = signingKey,
-
-                // Validate the JWT Issuer (iss) claim
-                ValidateIssuer = true,
-                ValidIssuer = "ExampleIssuer",
-
-                // Validate the JWT Audience (aud) claim
-                ValidateAudience = true,
-                ValidAudience = "ExampleAudience",
-
-                // Validate the token expiry
-                ValidateLifetime = true,
-
-                // If you want to allow a certain amount of clock drift, set that here:
-                ClockSkew = TimeSpan.Zero
-            };
-
-            app.UseJwtBearerAuthentication(new JwtBearerOptions
-            {
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                TokenValidationParameters = tokenValidationParameters
-            });
+            // Register the validation middleware, that is used to decrypt
+            // the access tokens and populate the HttpContext.User property.
+            app.UseOAuthValidation();
+            // Register the OpenIddict middleware.
+            app.UseOpenIddict();
 
             app.UseStaticFiles();
-
-            // Add JWT generation endpoint:
-            var options = new TokenProviderOptions
-            {
-                Audience = "ExampleAudience",
-                Issuer = "ExampleIssuer",
-                SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256),
-            };
-
-            app.UseMiddleware<TokenProviderMiddleware>(Options.Create(options));
 
             app.UseMvc(routes =>
             {

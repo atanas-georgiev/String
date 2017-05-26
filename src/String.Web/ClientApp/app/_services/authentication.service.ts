@@ -9,6 +9,7 @@ export class AuthenticationService {
 
     login(username: string, password: string) {
         let data = new URLSearchParams();
+        data.append('grant_type', 'password');
         data.append('username', username);
         data.append('password', password);
 
@@ -19,7 +20,7 @@ export class AuthenticationService {
         //    }, error => {
         //        console.log(error.json());
         //    });
-        return this.http.post('/token', data)
+        return this.http.post('/connect/token', data)
             .map((response: Response) => {
                 // login successful if there's a jwt token in the response
                 console.log(response.json()['access_token']);
