@@ -1,0 +1,78 @@
+﻿namespace StringApp.Services.Identity.Managers
+{
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+
+    using StringApp.Data.Models;
+
+    public interface IUserRoleManager<TUser, TContext>
+        where TUser : User, new() where TContext : IdentityDbContext<TUser>
+    {
+        Task<bool> AddPasswordToUserAsync(TUser user, string password, string question = null, string answer = null);
+
+        Task<bool> AddRoleAsync(IEnumerable<string> roles);
+
+        Task<bool> AddRoleAsync(string role);
+
+        Task<TUser> AddUserAsync(TUser user, string password = null, string role = null);
+
+        Task<TUser> AddUserAsync(
+            string email,
+            string password = null,
+            string question = null,
+            string answer = null,
+            string firstName = null,
+            string lastName = null,
+            string role = null);
+
+        Task AddUserExternalLoginInfoAsync(TUser user, ExternalLoginInfo info);
+
+        Task<bool> AddUserInRoleAsync(TUser user, string role);
+
+        Task<bool> AddUserInRoleAsync(TUser user, IEnumerable<string> roles);
+
+        Task<bool> ChangePasswordAsync(TUser user, string oldPassword, string newPassword);
+
+        Task<bool> CheckPasswordAsync(TUser user, string password);
+
+        Task<bool> CheckUserInRoleAsync(TUser user, string role);
+
+        IQueryable<string> GetAllRoles();
+
+        IQueryable<string> GetAllRolesForUser(TUser user);
+
+        IQueryable<TUser> GetAllUsers();
+
+        IQueryable<TUser> GetAllUsersInRole(string role);
+
+        TUser GetUser(string email);
+
+        Task<bool> HasPasswordAsync(TUser user);
+
+        Task<bool> RemoveRoleAsync(string role);
+
+        Task<bool> RemoveRoleAsync(IEnumerable<string> roles);
+
+        Task<bool> RemoveUserAsync(TUser user);
+
+        Task<bool> RemoveUserAsync(string email);
+
+        Task<bool> RemoveUserAsync(IEnumerable<TUser> users);
+
+        Task<bool> RemoveUserFromRoleAsync(TUser user, string role);
+
+        Task<bool> RemoveUserFromRoleAsync(TUser user, IEnumerable<string> roles);
+
+        Task<bool> ResetPasswordAsync(TUser user, string passwordAnswer, string newPassword);
+
+        Task<bool> SignInAsync(TUser user, string password = null);
+
+        Task<bool> SignInAsync(string email, string password = null);
+
+        Task<bool> UpdateUserAsync(TUser user);
+    }
+}

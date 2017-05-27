@@ -38,6 +38,12 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Data\StringApp.Data.Common\StringApp.Data.Common.csproj" />
+    <ProjectReference Include="..\..\Data\StringApp.Data.Models\StringApp.Data.Models.csproj" />
+    <ProjectReference Include="..\..\Data\StringApp.Data\StringApp.Data.csproj" />
+    <ProjectReference Include="..\..\Services\StringApp.Services.Identity\StringApp.Services.Identity.csproj" />
+  </ItemGroup>
   <Target Name="RunWebpack" AfterTargets="ComputeFilesToPublish">
     <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
     <Exec Command="npm install" />

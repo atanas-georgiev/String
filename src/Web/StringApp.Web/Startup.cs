@@ -8,6 +8,11 @@ namespace StringApp.Web
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
 
+    using StringApp.Data;
+    using StringApp.Data.Models;
+    using StringApp.Services.Identity.Extensions;
+    using StringApp.Services.Identity.Managers;
+
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -21,7 +26,7 @@ namespace StringApp.Web
         public IConfigurationRoot Configuration { get; }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceScopeFactory scopeFactory)
         {
             loggerFactory.AddConsole(this.Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
@@ -35,6 +40,8 @@ namespace StringApp.Web
             {
                 app.UseExceptionHandler("/Home/Error");
             }
+
+            app.AddAvgIdentityMigration<StringAppDbContext, User>(scopeFactory, Configuration);
 
             // Register the validation middleware, that is used to decrypt
             // the access tokens and populate the HttpContext.User property.
@@ -59,20 +66,26 @@ namespace StringApp.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
-            services.AddMvc();
-
-            services.AddDbContext<DbContext>(
+            services.AddDbContext<StringAppDbContext>(
                 options =>
                     {
                         // Configure the context to use an in-memory store.
-                        options.UseInMemoryDatabase();
+                        options.UseSqlServer(this.Configuration.GetConnectionString("WebAppDb"));
 
                         // Register the entity sets needed by OpenIddict.
                         // Note: use the generic overload if you need
                         // to replace the default OpenIddict entities.
                         options.UseOpenIddict();
                     });
+
+            services.AddScoped<DbContext, StringAppDbContext>();
+            services.Add(ServiceDescriptor.Scoped(typeof(IUserRoleManager<,>), typeof(UserRoleManager<,>)));
+
+            services.AddAvgIdentityServices<StringAppDbContext, User>(this.Configuration);
+
+            // Add framework services.
+            services.AddMvc();
+
             services.AddOpenIddict(
                 options =>
                     {
