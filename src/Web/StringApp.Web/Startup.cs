@@ -1,11 +1,17 @@
 namespace StringApp.Web
 {
+    using System.IO;
+
+    using AspNet.Security.OpenIdConnect.Primitives;
+
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
     using Microsoft.AspNetCore.SpaServices.Webpack;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.FileProviders;
     using Microsoft.Extensions.Logging;
 
     using StringApp.Data;
@@ -51,6 +57,11 @@ namespace StringApp.Web
             app.UseOpenIddict();
 
             app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+                                   {
+                                       FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "node_modules")),
+                                       RequestPath = "/node_modules"
+                                   });
 
             app.UseMvc(
                 routes =>
@@ -83,6 +94,13 @@ namespace StringApp.Web
 
             services.AddAvgIdentityServices<StringAppDbContext, User>(this.Configuration);
 
+            services.Configure<IdentityOptions>(options =>
+                {
+                    options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
+                    options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
+                    options.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
+                });
+
             // Add framework services.
             services.AddMvc();
 
@@ -90,7 +108,7 @@ namespace StringApp.Web
                 options =>
                     {
                         // Register the Entity Framework stores.
-                        options.AddEntityFrameworkCoreStores<DbContext>();
+                        options.AddEntityFrameworkCoreStores<StringAppDbContext>();
 
                         // Register the ASP.NET Core MVC binder used by OpenIddict.
                         // Note: if you don't call this method, you won't be able to

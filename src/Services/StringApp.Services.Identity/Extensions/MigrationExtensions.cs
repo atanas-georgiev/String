@@ -66,7 +66,6 @@
                 throw new ConfigurationException("AvgIdentity InitialData error");
             }
 
-            // TODO: asdada
             await userRoleManager.AddRoleAsync(roles);
         }
 

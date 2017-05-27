@@ -23,8 +23,6 @@
         Task<TUser> AddUserAsync(
             string email,
             string password = null,
-            string question = null,
-            string answer = null,
             string firstName = null,
             string lastName = null,
             string role = null);

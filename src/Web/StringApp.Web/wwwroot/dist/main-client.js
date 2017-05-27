@@ -59,7 +59,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "f5171b46a304b15881fe"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "f96077a0336fd06c8f05"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -704,7 +704,7 @@
 /******/ 	__webpack_require__.h = function() { return hotCurrentHash; };
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return hotCreateRequire(59)(__webpack_require__.s = 59);
+/******/ 	return hotCreateRequire(60)(__webpack_require__.s = 60);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -749,7 +749,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(0);
 var router_1 = __webpack_require__(3);
-var Subject_1 = __webpack_require__(57);
+var Subject_1 = __webpack_require__(58);
 var AlertService = (function () {
     function AlertService(router) {
         var _this = this;
@@ -804,50 +804,68 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(0);
 var http_1 = __webpack_require__(2);
-__webpack_require__(11);
 var AuthenticationService = (function () {
-    function AuthenticationService(http) {
-        this.http = http;
+    function AuthenticationService() {
     }
-    AuthenticationService.prototype.login = function (username, password) {
-        var data = new http_1.URLSearchParams();
-        data.append('grant_type', 'password');
-        data.append('username', username);
-        data.append('password', password);
-        //this.http
-        //    .post('/api', data)
-        //    .subscribe(data => {
-        //        alert('ok');
-        //    }, error => {
-        //        console.log(error.json());
-        //    });
-        return this.http.post('/connect/token', data)
-            .map(function (response) {
-            // login successful if there's a jwt token in the response
-            console.log(response.json()['access_token']);
-            var user = response.json();
-            if (user && user.token) {
-                console.log(user);
-                // store user details and jwt token in local storage to keep user logged in between page refreshes
-                //localStorage.setItem('currentUser', JSON.stringify(user));
-            }
-        });
+    // for requesting secure data using json
+    AuthenticationService.prototype.authJsonHeaders = function () {
+        var header = new http_1.Headers();
+        header.append('Content-Type', 'application/json');
+        header.append('Accept', 'application/json');
+        header.append('Authorization', 'Bearer ' + sessionStorage.getItem('bearer_token'));
+        return header;
     };
+    // for requesting secure data from a form post
+    AuthenticationService.prototype.authFormHeaders = function () {
+        var header = new http_1.Headers();
+        header.append('Content-Type', 'application/x-www-form-urlencoded');
+        header.append('Accept', 'application/json');
+        header.append('Authorization', 'Bearer ' + sessionStorage.getItem('bearer_token'));
+        return header;
+    };
+    // for requesting unsecured data using json
+    AuthenticationService.prototype.jsonHeaders = function () {
+        var header = new http_1.Headers();
+        header.append('Content-Type', 'application/json');
+        header.append('Accept', 'application/json');
+        return header;
+    };
+    // for requesting unsecured data using form post
+    AuthenticationService.prototype.contentHeaders = function () {
+        var header = new http_1.Headers();
+        header.append('Content-Type', 'application/x-www-form-urlencoded');
+        header.append('Accept', 'application/json');
+        return header;
+    };
+    // After a successful login, save token data into session storage
+    // note: use "localStorage" for persistent, browser-wide logins; "sessionStorage" for per-session storage.
+    AuthenticationService.prototype.login = function (responseData) {
+        var access_token = responseData.access_token;
+        var expires_in = responseData.expires_in;
+        sessionStorage.setItem('access_token', access_token);
+        sessionStorage.setItem('bearer_token', access_token);
+        // TODO: implement meaningful refresh, handle expiry 
+        sessionStorage.setItem('expires_in', expires_in.toString());
+    };
+    // called when logging out user; clears tokens from browser
     AuthenticationService.prototype.logout = function () {
-        // remove user from local storage to log user out
-        //localStorage.removeItem('currentUser');
+        //localStorage.removeItem('access_token');
+        sessionStorage.removeItem('access_token');
+        sessionStorage.removeItem('bearer_token');
+        sessionStorage.removeItem('expires_in');
+    };
+    // simple check of logged in status: if there is a token, we're (probably) logged in.
+    // ideally we check status and check token has not expired (server will back us up, if this not done, but it could be cleaner)
+    AuthenticationService.prototype.loggedIn = function () {
+        return !!sessionStorage.getItem('bearer_token');
     };
     return AuthenticationService;
 }());
 AuthenticationService = __decorate([
-    core_1.Injectable(),
-    __metadata("design:paramtypes", [http_1.Http])
+    core_1.Injectable()
 ], AuthenticationService);
 exports.AuthenticationService = AuthenticationService;
 
@@ -870,7 +888,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(0);
 var http_1 = __webpack_require__(2);
-__webpack_require__(11);
+__webpack_require__(46);
 var UserService = (function () {
     function UserService(http) {
         this.http = http;
@@ -926,31 +944,40 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(0);
 var router_1 = __webpack_require__(3);
+var http_1 = __webpack_require__(2);
+var LoginViewModel_1 = __webpack_require__(19);
 var alert_service_1 = __webpack_require__(4);
 var authentication_service_1 = __webpack_require__(5);
 var LoginComponent = (function () {
-    function LoginComponent(route, router, authenticationService, alertService) {
+    function LoginComponent(http, route, router, authenticationService, alertService) {
+        this.http = http;
         this.route = route;
         this.router = router;
         this.authenticationService = authenticationService;
         this.alertService = alertService;
-        this.model = {};
         this.loading = false;
     }
     LoginComponent.prototype.ngOnInit = function () {
+        this.model = new LoginViewModel_1.LoginViewModel();
         // reset login status
         this.authenticationService.logout();
         // get return url from route parameters or default to '/'
         this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
     };
+    // post the user's login details to server, if authenticated token is returned, then token is saved to session storage
     LoginComponent.prototype.login = function () {
         var _this = this;
         this.loading = true;
-        this.authenticationService.login(this.model.username, this.model.password)
-            .subscribe(function (data) {
-            _this.router.navigate([_this.returnUrl]);
+        //event.preventDefault();
+        var body = 'username=' + this.model.email + '&password=' + this.model.password + '&grant_type=password';
+        this.http.post('/connect/token', body, { headers: this.authenticationService.contentHeaders() })
+            .subscribe(function (response) {
+            // success, save the token to session storage
+            _this.authenticationService.login(response.json());
+            _this.router.navigate(['/about']);
         }, function (error) {
-            _this.alertService.error(error);
+            _this.alertService.error(error.text());
+            console.log(error.text());
             _this.loading = false;
         });
     };
@@ -960,7 +987,8 @@ LoginComponent = __decorate([
     core_1.Component({
         template: __webpack_require__(40)
     }),
-    __metadata("design:paramtypes", [router_1.ActivatedRoute,
+    __metadata("design:paramtypes", [http_1.Http,
+        router_1.ActivatedRoute,
         router_1.Router,
         authentication_service_1.AuthenticationService,
         alert_service_1.AlertService])
@@ -986,26 +1014,41 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(0);
 var router_1 = __webpack_require__(3);
+var RegisterViewModel_1 = __webpack_require__(61);
+var http_1 = __webpack_require__(2);
+var authentication_service_1 = __webpack_require__(5);
 var alert_service_1 = __webpack_require__(4);
 var user_service_1 = __webpack_require__(6);
 var RegisterComponent = (function () {
-    function RegisterComponent(router, userService, alertService) {
+    function RegisterComponent(http, router, userService, authenticationService, alertService) {
+        this.http = http;
         this.router = router;
         this.userService = userService;
+        this.authenticationService = authenticationService;
         this.alertService = alertService;
-        this.model = {};
         this.loading = false;
+        this.model = new RegisterViewModel_1.RegisterViewModel();
     }
     RegisterComponent.prototype.register = function () {
         var _this = this;
         this.loading = true;
-        this.userService.create(this.model)
-            .subscribe(function (data) {
-            _this.alertService.success('Registration successful', true);
-            _this.router.navigate(['/login']);
+        var body = { 'email': this.model.email, 'password': this.model.password, 'verifyPassword': this.model.verifyPassword };
+        this.http.post('/Account/Register', JSON.stringify(body), { headers: this.authenticationService.jsonHeaders() })
+            .subscribe(function (response) {
+            if (response.status == 200) {
+                _this.router.navigate(['/login']);
+            }
+            else {
+                alert(response.json().error);
+                _this.loading = false;
+                console.log(response.json().error);
+            }
         }, function (error) {
-            _this.alertService.error(error);
+            // TODO: parse error messages, generate toast popups
+            // {"Email":["The Email field is required.","The Email field is not a valid e-mail address."],"Password":["The Password field is required.","The Password must be at least 6 characters long."]}
             _this.loading = false;
+            alert(error.text());
+            console.log(error.text());
         });
     };
     return RegisterComponent;
@@ -1014,8 +1057,10 @@ RegisterComponent = __decorate([
     core_1.Component({
         template: __webpack_require__(41)
     }),
-    __metadata("design:paramtypes", [router_1.Router,
+    __metadata("design:paramtypes", [http_1.Http,
+        router_1.Router,
         user_service_1.UserService,
+        authentication_service_1.AuthenticationService,
         alert_service_1.AlertService])
 ], RegisterComponent);
 exports.RegisterComponent = RegisterComponent;
@@ -1303,36 +1348,25 @@ module.exports = Html5Entities;
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-
-var Observable_1 = __webpack_require__(52);
-var map_1 = __webpack_require__(54);
-Observable_1.Observable.prototype.map = map_1.map;
-//# sourceMappingURL=map.js.map
+module.exports = (__webpack_require__(1))(37);
 
 /***/ }),
 /* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = (__webpack_require__(1))(37);
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
 module.exports = (__webpack_require__(1))(5);
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 __webpack_require__(45);
-__webpack_require__(56);
+__webpack_require__(57);
 var core_1 = __webpack_require__(0);
-var platform_browser_dynamic_1 = __webpack_require__(55);
+var platform_browser_dynamic_1 = __webpack_require__(56);
 var app_module_client_1 = __webpack_require__(20);
 if (true) {
     module['hot'].accept();
@@ -1353,7 +1387,7 @@ var modulePromise = platform_browser_dynamic_1.platformBrowserDynamic().bootstra
 
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(__resourceQuery, module) {/*eslint-env browser*/
@@ -1489,11 +1523,11 @@ if (typeof window !== 'undefined') {
 }
 
 function createReporter() {
-  var strip = __webpack_require__(46);
+  var strip = __webpack_require__(47);
 
   var overlay;
   if (typeof document !== 'undefined' && options.overlay) {
-    overlay = __webpack_require__(49);
+    overlay = __webpack_require__(50);
   }
 
   var styles = {
@@ -1546,7 +1580,7 @@ function createReporter() {
   };
 }
 
-var processUpdate = __webpack_require__(50);
+var processUpdate = __webpack_require__(51);
 
 var customHandler;
 var subscribeAllHandler;
@@ -1611,16 +1645,16 @@ if (module) {
   };
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, "?path=%2F__webpack_hmr", __webpack_require__(51)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, "?path=%2F__webpack_hmr", __webpack_require__(52)(module)))
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = (__webpack_require__(1))(44);
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1803,7 +1837,7 @@ ansiHTML.reset()
 
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1814,7 +1848,7 @@ module.exports = function () {
 
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1852,6 +1886,21 @@ exports.AlertComponent = AlertComponent;
 
 
 /***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var LoginViewModel = (function () {
+    function LoginViewModel() {
+    }
+    return LoginViewModel;
+}());
+exports.LoginViewModel = LoginViewModel;
+
+
+/***/ }),
 /* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1865,8 +1914,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(0);
-var platform_browser_1 = __webpack_require__(13);
-var forms_1 = __webpack_require__(12);
+var platform_browser_1 = __webpack_require__(12);
+var forms_1 = __webpack_require__(11);
 var http_1 = __webpack_require__(2);
 var app_module_shared_1 = __webpack_require__(21);
 var AppModule = (function () {
@@ -1950,7 +1999,7 @@ AppComponent = __decorate([
     core_1.Component({
         selector: 'app',
         template: __webpack_require__(35),
-        styles: [__webpack_require__(47)]
+        styles: [__webpack_require__(48)]
     })
 ], AppComponent);
 exports.AppComponent = AppComponent;
@@ -2080,7 +2129,7 @@ NavMenuComponent = __decorate([
     core_1.Component({
         selector: 'nav-menu',
         template: __webpack_require__(39),
-        styles: [__webpack_require__(48)]
+        styles: [__webpack_require__(49)]
     })
 ], NavMenuComponent);
 exports.NavMenuComponent = NavMenuComponent;
@@ -2100,14 +2149,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(0);
-var platform_browser_1 = __webpack_require__(13);
-var forms_1 = __webpack_require__(12);
+var platform_browser_1 = __webpack_require__(12);
+var forms_1 = __webpack_require__(11);
 var http_1 = __webpack_require__(2);
 var alert_service_1 = __webpack_require__(4);
 var user_service_1 = __webpack_require__(6);
 var authentication_service_1 = __webpack_require__(5);
 var user_routing_1 = __webpack_require__(28);
-var alert_component_1 = __webpack_require__(19);
+var alert_component_1 = __webpack_require__(18);
 var register_component_1 = __webpack_require__(8);
 var login_component_1 = __webpack_require__(7);
 var UserModule = (function () {
@@ -2542,13 +2591,13 @@ module.exports = "<div class='main-nav'>\r\n    <div class='navbar navbar-invers
 /* 40 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"col-md-6 col-md-offset-3\">\r\n    <h2>Login</h2>\r\n    <form name=\"form\" (ngSubmit)=\"f.form.valid && login()\" #f=\"ngForm\" novalidate>\r\n        <div class=\"form-group\" [ngClass]=\"{ 'has-error': f.submitted && !username.valid }\">\r\n            <label for=\"username\">Username</label>\r\n            <input type=\"text\" class=\"form-control\" name=\"username\" [(ngModel)]=\"model.username\" #username=\"ngModel\" required />\r\n            <div *ngIf=\"f.submitted && !username.valid\" class=\"help-block\">Username is required</div>\r\n        </div>\r\n        <div class=\"form-group\" [ngClass]=\"{ 'has-error': f.submitted && !password.valid }\">\r\n            <label for=\"password\">Password</label>\r\n            <input type=\"password\" class=\"form-control\" name=\"password\" [(ngModel)]=\"model.password\" #password=\"ngModel\" required />\r\n            <div *ngIf=\"f.submitted && !password.valid\" class=\"help-block\">Password is required</div>\r\n        </div>\r\n        <div class=\"form-group\">\r\n            <button [disabled]=\"loading\" class=\"btn btn-primary\">Login</button>\r\n            <img *ngIf=\"loading\" src=\"data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==\" />\r\n            <a [routerLink]=\"['/register']\" class=\"btn btn-link\">Register</a>\r\n        </div>\r\n    </form>\r\n</div>";
+module.exports = "<div class=\"col-md-6 col-md-offset-3\">\r\n    <h2>Login</h2>\r\n    <form name=\"form\" (ngSubmit)=\"f.form.valid && login()\" #f=\"ngForm\" novalidate>\r\n        <div class=\"form-group\" [ngClass]=\"{ 'has-error': f.submitted && !email.valid }\">\r\n            <label for=\"email\">email</label>\r\n            <input type=\"text\" class=\"form-control\" name=\"email\" [(ngModel)]=\"model.email\" #email=\"ngModel\" required />\r\n            <div *ngIf=\"f.submitted && !email.valid\" class=\"help-block\">email is required</div>\r\n        </div>\r\n        <div class=\"form-group\" [ngClass]=\"{ 'has-error': f.submitted && !password.valid }\">\r\n            <label for=\"password\">Password</label>\r\n            <input type=\"password\" class=\"form-control\" name=\"password\" [(ngModel)]=\"model.password\" #password=\"ngModel\" required />\r\n            <div *ngIf=\"f.submitted && !password.valid\" class=\"help-block\">Password is required</div>\r\n        </div>\r\n        <div class=\"form-group\">\r\n            <button [disabled]=\"loading\" class=\"btn btn-primary\">Login</button>\r\n            <img *ngIf=\"loading\" src=\"data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==\" />\r\n            <a [routerLink]=\"['/register']\" class=\"btn btn-link\">Register</a>\r\n        </div>\r\n    </form>\r\n</div>";
 
 /***/ }),
 /* 41 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"col-md-6 col-md-offset-3\">\r\n    <h2>Register</h2>\r\n    <form name=\"form\" (ngSubmit)=\"f.form.valid && register()\" #f=\"ngForm\" novalidate>\r\n        <div class=\"form-group\" [ngClass]=\"{ 'has-error': f.submitted && !username.valid }\">\r\n            <label for=\"firstName\">First Name</label>\r\n            <input type=\"text\" class=\"form-control\" name=\"firstName\" [(ngModel)]=\"model.firstName\" #firstName=\"ngModel\" required />\r\n            <div *ngIf=\"f.submitted && !firstName.valid\" class=\"help-block\">First Name is required</div>\r\n        </div>\r\n        <div class=\"form-group\" [ngClass]=\"{ 'has-error': f.submitted && !username.valid }\">\r\n            <label for=\"lastName\">Last Name</label>\r\n            <input type=\"text\" class=\"form-control\" name=\"lastName\" [(ngModel)]=\"model.lastName\" #lastName=\"ngModel\" required />\r\n            <div *ngIf=\"f.submitted && !lastName.valid\" class=\"help-block\">Last Name is required</div>\r\n        </div>\r\n        <div class=\"form-group\" [ngClass]=\"{ 'has-error': f.submitted && !username.valid }\">\r\n            <label for=\"username\">Username</label>\r\n            <input type=\"text\" class=\"form-control\" name=\"username\" [(ngModel)]=\"model.username\" #username=\"ngModel\" required />\r\n            <div *ngIf=\"f.submitted && !username.valid\" class=\"help-block\">Username is required</div>\r\n        </div>\r\n        <div class=\"form-group\" [ngClass]=\"{ 'has-error': f.submitted && !password.valid }\">\r\n            <label for=\"password\">Password</label>\r\n            <input type=\"password\" class=\"form-control\" name=\"password\" [(ngModel)]=\"model.password\" #password=\"ngModel\" required />\r\n            <div *ngIf=\"f.submitted && !password.valid\" class=\"help-block\">Password is required</div>\r\n        </div>\r\n        <div class=\"form-group\">\r\n            <button [disabled]=\"loading\" class=\"btn btn-primary\">Register</button>\r\n            <img *ngIf=\"loading\" src=\"data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==\" />\r\n            <a [routerLink]=\"['/login']\" class=\"btn btn-link\">Cancel</a>\r\n        </div>\r\n    </form>\r\n</div>";
+module.exports = "<div class=\"col-md-6 col-md-offset-3\">\r\n    <h2>Register</h2>\r\n    <form name=\"form\" (ngSubmit)=\"f.form.valid && register()\" #f=\"ngForm\" novalidate>\r\n        <div class=\"form-group\" [ngClass]=\"{ 'has-error': f.submitted && !email.valid }\">\r\n            <label for=\"email\">email</label>\r\n            <input type=\"text\" class=\"form-control\" name=\"email\" [(ngModel)]=\"model.email\" #email=\"ngModel\" required />\r\n            <div *ngIf=\"f.submitted && !email.valid\" class=\"help-block\">email is required</div>\r\n        </div>\r\n        <div class=\"form-group\" [ngClass]=\"{ 'has-error': f.submitted && !password.valid }\">\r\n            <label for=\"password\">Password</label>\r\n            <input type=\"password\" class=\"form-control\" name=\"password\" [(ngModel)]=\"model.password\" #password=\"ngModel\" required />\r\n        </div>\r\n        <div class=\"form-group\" [ngClass]=\"{ 'has-error': f.submitted && !verifyPassword.valid }\">\r\n            <label for=\"verifyPassword\">Verify Password</label>\r\n            <input type=\"password\" class=\"form-control\" name=\"verifyPassword\" [(ngModel)]=\"model.verifyPassword\" #password=\"ngModel\" required />\r\n        </div>\r\n        <div class=\"form-group\">\r\n            <button [disabled]=\"loading\" class=\"btn btn-primary\">Register</button>\r\n            <img *ngIf=\"loading\" src=\"data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==\" />\r\n            <a [routerLink]=\"['/login']\" class=\"btn btn-link\">Cancel</a>\r\n        </div>\r\n    </form>\r\n</div>";
 
 /***/ }),
 /* 42 */
@@ -3873,7 +3922,7 @@ var Reflect;
             Function("return this;")());
 })(Reflect || (Reflect = {}));
 //# sourceMappingURL=Reflect.js.map
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(53), __webpack_require__(58)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(54), __webpack_require__(59)))
 
 /***/ }),
 /* 46 */
@@ -3881,7 +3930,18 @@ var Reflect;
 
 "use strict";
 
-var ansiRegex = __webpack_require__(18)();
+var Observable_1 = __webpack_require__(53);
+var map_1 = __webpack_require__(55);
+Observable_1.Observable.prototype.map = map_1.map;
+//# sourceMappingURL=map.js.map
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var ansiRegex = __webpack_require__(17)();
 
 module.exports = function (str) {
 	return typeof str === 'string' ? str.replace(ansiRegex, '') : str;
@@ -3889,7 +3949,7 @@ module.exports = function (str) {
 
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -3903,7 +3963,7 @@ module.exports = function (str) {
     
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -3917,7 +3977,7 @@ module.exports = function (str) {
     
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*eslint-env browser*/
@@ -3946,7 +4006,7 @@ for (var key in styles) {
   clientOverlay.style[key] = styles[key];
 }
 
-var ansiHTML = __webpack_require__(17);
+var ansiHTML = __webpack_require__(16);
 var colors = {
   reset: ['transparent', 'transparent'],
   black: '181818',
@@ -4002,7 +4062,7 @@ function problemType (type) {
 
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -4140,7 +4200,7 @@ module.exports = function(hash, moduleMap, options) {
 
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -4168,54 +4228,69 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = (__webpack_require__(1))(0);
 
 /***/ }),
-/* 53 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = (__webpack_require__(1))(12);
 
 /***/ }),
-/* 54 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = (__webpack_require__(1))(27);
 
 /***/ }),
-/* 55 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = (__webpack_require__(1))(39);
 
 /***/ }),
-/* 56 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = (__webpack_require__(1))(46);
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = (__webpack_require__(1))(6);
 
 /***/ }),
-/* 58 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = (__webpack_require__(1))(7);
 
 /***/ }),
-/* 59 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(16);
 __webpack_require__(15);
-module.exports = __webpack_require__(14);
+__webpack_require__(14);
+module.exports = __webpack_require__(13);
+
+
+/***/ }),
+/* 61 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var RegisterViewModel = (function () {
+    function RegisterViewModel() {
+    }
+    return RegisterViewModel;
+}());
+exports.RegisterViewModel = RegisterViewModel;
 
 
 /***/ })
